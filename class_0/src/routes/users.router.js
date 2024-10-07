@@ -25,15 +25,19 @@ router.get('/', (req, res) => {
 
 // router.post('/', auth, uploader.array('thumbnail', 3), (req, res) => { // gestión de múltiples archivos
 router.post('/', auth, uploader.single('thumbnail'), (req, res) => { // gestión de archivo único
-    const { firstName, lastName } = req.body; // desestructuramos (extraemos) las ppdades que nos interesan del body
+    try {
+        const { firstName, lastName } = req.body; // desestructuramos (extraemos) las ppdades que nos interesan del body
 
-    if (firstName != '' && lastName != '') {
-        const maxId = Math.max(...users.map(element => +element.id));
-        const newUser = { id: maxId + 1, firstName: firstName, lastName: lastName };
-        users.push(newUser);
-        res.status(200).send({ error: null, data: newUser, file: req.file });
-    } else {
-        res.status(400).send({ error: 'Faltan campos obligatorios', data: [] });
+        if (firstName != '' && lastName != '') {
+            const maxId = Math.max(...users.map(element => +element.id));
+            const newUser = { id: maxId + 1, firstName: firstName, lastName: lastName };
+            users.push(newUser);
+            res.status(200).send({ error: null, data: newUser, file: req.file });
+        } else {
+            res.status(400).send({ error: 'Faltan campos obligatorios', data: [] });
+        }
+    } catch (err) {
+        res.status(500).send({ error: 'Error interno de ejecución del servidor', data: [] });
     }
 });
 
