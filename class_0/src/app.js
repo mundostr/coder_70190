@@ -1,6 +1,7 @@
 import express from 'express';
 import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
+import mongoose from 'mongoose';
 
 import usersRouter from './routes/users.router.js';
 import viewsRouter from './routes/views.router.js';
@@ -20,8 +21,10 @@ app.use('/views', viewsRouter);
 app.use('/api/users', usersRouter);
 app.use('/static', express.static(`${config.DIRNAME}/public`));
 
-const httpServer = app.listen(config.PORT, () => {
-    console.log(`Server activo en puerto ${config.PORT}`);
+// Convertimos el callback del listen en asíncrono y esperamos la conexión a la base de datos
+const httpServer = app.listen(config.PORT, async() => {
+    await mongoose.connect(config.MONGODB_URI);
+    console.log(`Server activo en puerto ${config.PORT}, conectado a bbdd local`);
 });
 
 const socketServer = new Server(httpServer);
