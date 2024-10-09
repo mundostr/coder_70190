@@ -12,7 +12,7 @@ const config = {
     get UPLOAD_DIR() { return `${this.DIRNAME}/public/uploads` },
     // Constante con la ruta de conexión a la base de datos, en este caso en servidor MongoDB local
     MONGODB_URI: 'mongodb://127.0.0.1:27017/coder70190',
-    SECRET: 'coder70190secret' // lo utilizamos para firmar cookies u otras
+    SECRET: 'coder70190secret' // lo utilizamos para firmar cookies, sessions, etc
 };
 
 

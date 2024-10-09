@@ -36,5 +36,12 @@ router.get('/cookies', (req, res) => {
     res.status(200).render('cookies', data);
 });
 
+router.get('/login', (req, res) => {
+    const data = {
+    };
+    
+    res.status(200).render('login', data);
+});
+
 
 export default router;

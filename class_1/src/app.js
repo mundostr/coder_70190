@@ -2,7 +2,9 @@ import express from 'express';
 import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
+// Importamos módulos para cookies y sesiones
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 
 import usersRouter from './routes/users.router.js';
 import viewsRouter from './routes/views.router.js';
@@ -15,9 +17,10 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Habilitamos el módulo de manejo de cookies
-// Pasamos un secret para que el parser pueda firmar las cookies
+// Habilitamos el parser de cookies y pasamos secret para que pueda firmar
 app.use(cookieParser(config.SECRET));
+// Habilitamos el gestor de sesiones, esto inyectará el objeto req.session en la cadena de Express
+app.use(session({ secret: config.SECRET, resave: true, saveUninitialized: true }));
 
 app.engine('handlebars', handlebars.engine());
 app.set('views', `${config.DIRNAME}/views`);

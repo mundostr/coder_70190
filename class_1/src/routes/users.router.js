@@ -9,18 +9,21 @@ import userModel from '../models/user.model.js';
 
 const router = Router();
 
+/**
+ * Middleware de autenticación
+ * 
+ * Aprovechamos el objeto req.session para verificar si hay datos
+ * de usuario disponibles (userData). Si es así, significa que el
+ * usuario ha hecho el login correctamente (ver endpoint login debajo)
+ */
 const auth = (req, res, next) => {
-    console.log('Ejecuta el middleware de autenticación de usuario');
-    next();
-
-    /**
-     * // Simulando la autenticación
-     * if (req.body.username === 'x' && req.body.pass === 'y') {
-     *  next();
-     * } else {
-     *  return res.status(401).send({ error: 'No tiene autorización', data: [] });
-     * }
-     */
+    // Si hay datos disponibles y el user es admin, lo dejamos continuar
+    if (req.session?.userData && req.session?.userData.admin) {
+        next();
+    } else {
+        // sino devolvemos un status 401 de no autorizado
+        res.status(401).send({ error: 'No autorizado', data: [] });
+    }
 }
 
 router.get('/', async (req, res) => {
@@ -106,6 +109,44 @@ router.delete('/:id?', auth, async (req, res) => {
     } catch (err) {
         res.status(500).send({ error: 'Error interno de ejecución del servidor', data: [] });
     }
+});
+
+router.get('/session', (req, res) => {
+    // Podemos generar cualquier propiedad que necesitemos dentro del req.session
+    req.session.counter ? req.session.counter++: req.session.counter = 1;
+    res.status(200).send({ error: null, data: { visits: req.session.counter } });
+});
+
+router.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    /**
+     * Por ahora verificamos los datos de usuario con valores hardcodeados,
+     * luego esto se realizará con una consulta a la base de datos
+     */
+    if (username === 'cperren' && password === 'abc123') {
+        // Si está todo ok, generamos un objeto userData dentro del req.session
+        // (ver middleware auth arriba)
+        req.session.userData = { username: username, admin: true };
+        res.status(200).send({ error: null, data: 'Usuario autenticado, sesión iniciada!' });
+    } else {
+        res.status(401).send({ error: 'Datos no válidos', data: [] });
+    }
+});
+
+router.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) return res.status(500).send({ error: 'Error al cerrar sesión', data: [] });
+        res.status(200).send({ error: null, data: 'Sesión cerrada' });
+    });
+});
+
+/**
+ * Como esta ruta tiene activo el middleware auth, el contenido devuelto por el callback
+ * solo será visible si el usuario ha hecho login correctamente y es admin.
+ */
+router.get('/private', auth, (req, res) => {
+    res.status(200).send({ error: null, data: 'Este contenido solo es visible por usuarios autenticados' });
 });
 
 
