@@ -89,10 +89,20 @@ router.delete('/:id?', auth, async (req, res) => {
     }
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    if (username === 'cperren' && password === 'abc123') {
+    /**
+     * Quitamos la autenticación de usuario hardcoded que teníamos (cperren, abc123)
+     * y pasamos a utilizar el método authenticate de nuestro controlador (manager).
+     * 
+     * Le enviamos las credenciales recibidas en el body, y esperamos el resultado,
+     * si el usuario y clave son correctos, retornará un objeto, caso contrario
+     * recibiremos un null
+     */
+    const process = await manager.authenticate(username, password);
+    if (process) {
+        // Mantendremos por ahora estos datos simples de sesión, luego iremos agregando otros
         req.session.userData = { username: username, admin: true };
         res.status(200).send({ error: null, data: 'Usuario autenticado, sesión iniciada!' });
     } else {
