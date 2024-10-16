@@ -89,6 +89,17 @@ router.delete('/:id?', auth, async (req, res) => {
     }
 });
 
+router.post('/register', async (req, res) => {
+    const { firstname, lastname, username, password } = req.body;
+
+    const process = await manager.register({ firstname, lastname, username, password });
+    if (process) {
+        res.status(200).send({ error: null, data: 'Usuario registrado, bienvenido!' });
+    } else {
+        res.status(401).send({ error: 'Ya existe un usuario con ese email', data: [] });
+    }
+});
+
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -106,7 +117,7 @@ router.post('/login', async (req, res) => {
         req.session.userData = { username: username, admin: true };
         res.status(200).send({ error: null, data: 'Usuario autenticado, sesión iniciada!' });
     } else {
-        res.status(401).send({ error: 'Datos no válidos', data: [] });
+        res.status(401).send({ error: 'Usuario o clave no válidos', data: [] });
     }
 });
 

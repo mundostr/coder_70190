@@ -43,10 +43,25 @@ class userManager {
      * con el criterio especificado en el filtro, si lo encuentra, lo
      * retorna, caso contrario devuelve null
      */
-    authenticate = async (user, pass) => {
+    authenticate = async (username, password) => {
         try {
-            const filter = { email: user, password: pass };
+            const filter = { email: username, password: password };
             return await userModel.findOne(filter);
+        } catch (err) {
+            return null;
+        }
+    }
+
+    register = async (data) => {
+        try {
+            const filter = { email: data.username };
+            const user = await userModel.findOne(filter);
+
+            if (!user) { // No hay usuario con ese email, procedemos a registrar
+                this.add(data);
+            } else {
+                return null;
+            }
         } catch (err) {
             return null;
         }
