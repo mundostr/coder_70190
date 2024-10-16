@@ -5,8 +5,8 @@ import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 // Importamos fileStore y MongoStore para almacenamiento de datos de sesión
-// import FileStore from 'session-file-store';
-import MongoStore from 'connect-mongo';
+import FileStore from 'session-file-store';
+// import MongoStore from 'connect-mongo';
 
 import usersRouter from './routes/users.router.js';
 import viewsRouter from './routes/views.router.js';
@@ -16,7 +16,7 @@ import config from './config.js';
 
 const app = express();
 // Instanciamos un storage en caso de guardar sesiones en archivo
-// const fileStorage = FileStore(session);
+const fileStorage = FileStore(session);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -28,8 +28,8 @@ app.use(session({
     saveUninitialized: true,
     // Pasamos a session un store, indicándole dónde debe guardar los datos
     // ttl = time to live = vida de la sesión en segs
-    // store: new fileStorage({ path: './sessions', ttl: 60, retries: 0 }),
-    store: MongoStore.create({ mongoUrl: config.MONGODB_URI, ttl: 60, mongoOptions: {}})
+    store: new fileStorage({ path: './sessions', ttl: 60, retries: 0 }),
+    // store: MongoStore.create({ mongoUrl: config.MONGODB_URI, ttl: 60, mongoOptions: {}})
 }));
 
 app.engine('handlebars', handlebars.engine());

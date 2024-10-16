@@ -43,10 +43,13 @@ class userManager {
      * con el criterio especificado en el filtro, si lo encuentra, lo
      * retorna, caso contrario devuelve null
      */
-    authenticate = async (username, password) => {
+    authenticate = async (user, pass) => {
         try {
-            const filter = { email: username, password: password };
-            return await userModel.findOne(filter);
+            const filter = { email: user, password: pass };
+            const foundUser = await userModel.findOne(filter).lean();
+            const { password, ...filteredUser } = foundUser;
+
+            return filteredUser;
         } catch (err) {
             return null;
         }

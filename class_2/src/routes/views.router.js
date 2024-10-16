@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { auth } from './users.router.js';
 
 
 const router = Router();
@@ -28,6 +29,12 @@ router.get('/login', (req, res) => {
     const data = {};
     
     res.status(200).render('login', data);
+});
+
+router.get('/profile', auth, (req, res) => {
+    const data = req.session.userData;
+    
+    res.status(200).render('profile', data);
 });
 
 
