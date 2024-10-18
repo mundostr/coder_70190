@@ -1,10 +1,14 @@
 import { Router } from 'express';
+import passport from 'passport';
+
 import { uploader } from '../uploader.js';
 import UserManager from '../dao/users.manager.js';
+import initAuthStrategies from '../auth/passport.config.js';
 
 
 const router = Router();
 const manager = new UserManager();
+initAuthStrategies();
 
 export const auth = (req, res, next) => {
     if (req.session?.userData && req.session?.userData.admin) {
@@ -135,6 +139,18 @@ router.post('/login', async (req, res) => {
     } else {
         res.status(400).send({ error: 'Faltan campos: obligatorios username, password', data: [] });
     }
+});
+
+router.post('/pplogin', passport.authenticate('login', {}), async (req, res) => {
+    req.user.admin = true; // Hardcoded por ahora
+    req.session.userData = req.user // Este req.user es inyectado automáticamente por passport
+
+    req.session.save(err => {
+        if (err) return res.status(500).send({ error: 'Error al almacenar datos de sesión', data: [] });
+
+        // res.status(200).send({ error: null, data: 'Usuario autenticado, sesión iniciada!' });
+        res.redirect('/views/profile');
+    });
 });
 
 router.get('/logout', (req, res) => {

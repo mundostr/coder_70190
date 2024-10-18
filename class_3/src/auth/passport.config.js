@@ -2,7 +2,7 @@ import passport from 'passport';
 import local from 'passport-local';
 import userManager from '../dao/users.manager.js';
 
-import { createHash, isValidPassword } from '../utils.js';
+// import { createHash, isValidPassword } from '../utils.js';
 
 const manager = new userManager();
 const localStrategy = local.Strategy;
@@ -12,14 +12,15 @@ const initAuthStrategies = () => {
         {passReqToCallback: true, usernameField: 'username'},
         async (req, username, password, done) => {
             try {
-                const filter = { email: username };
-                const foundUser = await manager.getOne(filter);
-
-                if (foundUser && isValidPassword(password, foundUser.password)) {
-                    const { password, ...filteredFoundUser } = foundUser;
-                    return done(null, filteredFoundUser);
+                if (username != '' && password != '') {
+                    const process = await manager.authenticate(username, password);
+                    if (process) {
+                        return done(null, process);    
+                    } else {
+                        return done('Usuario o clave no válidos', false);
+                    }
                 } else {
-                    return done(null, false);
+                    return done('Faltan campos: obligatorios username, password', false);
                 }
             } catch (err) {
                 return done(err, false);
