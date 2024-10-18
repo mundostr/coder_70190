@@ -1,8 +1,12 @@
+/**
+ * En este archivo cargaremos diferentes "estrategias" de Passport, es decir,
+ * distintas alternativas a través de las cuales un usuario puede registrarse
+ * o autenticarse (local, Github, Facebook, etc)
+ */
+
 import passport from 'passport';
 import local from 'passport-local';
 import userManager from '../dao/users.manager.js';
-
-// import { createHash, isValidPassword } from '../utils.js';
 
 const manager = new userManager();
 const localStrategy = local.Strategy;
@@ -13,9 +17,13 @@ const initAuthStrategies = () => {
         async (req, username, password, done) => {
             try {
                 if (username != '' && password != '') {
+                    // Para simplificar el código, podemos llamar directamente al manager.authenticate(). Ver dao/users.manager.js.
                     const process = await manager.authenticate(username, password);
                     if (process) {
-                        return done(null, process);    
+                        // Si el username (email) y los hash coinciden, process contendrá los datos de usuario,
+                        // simplemente retornamos esos datos a través de done(), Passport los inyectará en el
+                        // objeto req de Express, como req.user.
+                        return done(null, process);
                     } else {
                         return done('Usuario o clave no válidos', false);
                     }
