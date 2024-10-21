@@ -1,18 +1,40 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-/**
- * createHash nos permite hashear una clave plana mediante brcypt, generando
- * un resultado que es el que realmente almacenaremos en la base de datos.
- * 
- * Este proceso es IRREVERSIBLE, en caso que la bbdd resulte comprometida y alguien
- * logre acceder al dato, NO podrá obtener la clave plana a partir del hash.
- */
-export const createHash = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+export const createHash = (password) => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 
-/**
- * Así como el hash nos aporta una capa de seguridad, al no tener más la clave plana
- * almacenada en la bbdd, no podemos comparar de forma directa con la recibida en el body,
- * a partir de ahora tendremos que aplicar el mismo proceso de bcrypt a la recibida, y
- * comparar si coinciden los hash, esto es lo que  hace isValidPassword.
- */
 export const isValidPassword = (passwordToVerify, storedHash) => bcrypt.compareSync(passwordToVerify, storedHash);
+
+/**
+ * Nos permite crear un token JWT, indicando la carga útil (payload) y el tiempo de validez
+ * Este tiempo (expiration) puede indicarse con números y letras (m = minutos, h = horas, 
+ * d = días, por ej 2h = 2 horas de validez, 5 m = 5 minutos, 3d = 3 días)
+ */
+export const createToken = (payload, duration) => jwt.sign(payload, config.SECRET, { expiresIn: duration });
+
+/**
+ * Esta función trata de ubicar un token JWT, ya sea en los headers,
+ * en el sistema de cookies o vía query en la solicitud.
+ * 
+ * Si lo ubica y verifica, extrae su carga útil (payload) y lo guarda en un objeto
+ * req.user que puede ser reusado en otro middleware
+ */
+export const verifyToken = (req, res, next) => {
+    /**
+     * Si el token llega en los headers, debe venir bajo el nombre authorization y antecedido
+     * por la palabra Bearer -> Header Authorization: Bearer <token>
+     */
+    const headerToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : undefined;
+    const cookieToken = req.cookies && req.cookies[`${config.APP_NAME}_cookie`] ? req.cookies[`${config.APP_NAME}_cookie`] : undefined;
+    const queryToken = req.query.access_token ? req.query.access_token : undefined;
+    const receivedToken = headerToken || cookieToken || queryToken;
+
+    if (!receivedToken) return res.status(401).send({ error: 'Se requiere token', data: [] });
+
+    jwt.verify(receivedToken, config.SECRET, (err, payload) => {
+        if (err) return res.status(403).send({ error: 'Token no válido', data: [] });
+        
+        req.user = payload;
+        next();
+    });
+};

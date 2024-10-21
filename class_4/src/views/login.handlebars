@@ -34,10 +34,15 @@
         </div>
             
         <button type="submit" class="btn btn-success" style="margin-right: 1em;">Ingresar</button>
-        <button class="btn btn-primary" onclick="window.location.replace('/api/users/ghlogin')">Github</button>
-
-        <div style="margin-top: 24px;">
-            No tenés cuenta?: <a class="a2" href="/views/register">Registrate</a>
-        </div>
     </form>
+    
+    <div style="margin-top: 24px; padding: 1em; border: 1px solid #666; border-radius: 0.5em; width: 100%; text-align: center;">
+        <button class="btn btn-primary" onclick="window.location.replace('/api/users/ghlogin')"><i class="fa-brands fa-github"></i>&nbsp;&nbsp;Github</button>
+        &nbsp;&nbsp;
+        <button class="btn btn-danger" onclick="window.location.replace('/views/login')"><i class="fa-brands fa-google"></i>&nbsp;&nbsp;Google</button>
+    </div>
+
+    <div style="margin-top: 24px;">
+        No tenés cuenta?: <a class="a2" href="/views/register">Registrate</a>
+    </div>
 </div>

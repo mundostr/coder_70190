@@ -11,8 +11,18 @@ const manager = new UserManager();
 initAuthStrategies();
 
 export const auth = (req, res, next) => {
-    // if (req.session?.userData && req.session?.userData.admin) {
-    if (req.session?.passport) {
+    /**
+     * Si autenticamos manualmente (sin Passport), generaremos en el login
+     * un objeto dentro de req.session (por ej req.session.userData) y revisaremos
+     * esos datos aquí (ver endpoint /login).
+     * 
+     * Si autenticamos con Passport, el propio Passport inyecta los datos luego de
+     * la autenticación en req.session.passport.user, es decir, si tenemos un
+     * req.session.passport.user, significa que el usuario se autenticó correctamente,
+     * podríamos por supuesto verificar también su rol (admin, etc) y realizar otros pasos
+     * (ver más aclaraciones en edpoint /pplogin).
+     */
+    if ((req.session?.userData && req.session?.userData.admin) || req.session?.passport.user) {
         next();
     } else {
         res.status(401).send({ error: 'No autorizado', data: [] });
@@ -113,24 +123,14 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    /**
-     * Quitamos la autenticación de usuario hardcoded que teníamos (cperren, abc123)
-     * y pasamos a utilizar el método authenticate de nuestro controlador (manager).
-     * 
-     * Le enviamos las credenciales recibidas en el body, y esperamos el resultado,
-     * si el usuario y clave son correctos, retornará un objeto, caso contrario
-     * recibiremos un null
-     */
     if (username != '' && password != '') {
         const process = await manager.authenticate(username, password);
         if (process) {
             req.session.userData = { firstName: process.firstName, lastName: process.lastName, email: process.email, admin: true };
 
-            // Nos aseguramos que los datos de sesión se hayan guardado
             req.session.save(err => {
                 if (err) return res.status(500).send({ error: 'Error al almacenar datos de sesión', data: [] });
 
-                // Podemos tanto retornar respuesta como es habitual, o redireccionar a otra plantilla
                 // res.status(200).send({ error: null, data: 'Usuario autenticado, sesión iniciada!' });
                 res.redirect('/views/profile');
             });
@@ -142,9 +142,17 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.post('/pplogin', passport.authenticate('login', {}), async (req, res) => {
-    // req.user.admin = true; // Hardcoded por ahora
-    // req.session.userData = req.user // Este req.user es inyectado automáticamente por passport
+router.post('/pplogin', passport.authenticate('login', { failureRedirect: '/views/login' }), async (req, res) => {
+    /**
+     * Si se llega a este callback, es porque la autenticación fue exitosa.
+     * Passport inyecta automáticamente un objeto req.user con los datos del done().
+     * Podemos tomar datos desde allí para armar nuestro propio objeto en session:
+     * req.user.admin = true;
+     * req.session.userData = req.user;
+     * 
+     * o en el middleware auth aprovechar directamente el req.session.passport.user
+     * que Passport genera (ver arriba middleware auth()).
+     */
 
     req.session.save(err => {
         if (err) return res.status(500).send({ error: 'Error al almacenar datos de sesión', data: [] });
@@ -154,9 +162,30 @@ router.post('/pplogin', passport.authenticate('login', {}), async (req, res) => 
     });
 });
 
+/**
+ * Autenticación con Passport y servicio externo de Github
+ * 
+ * En este caso necesitamos DOS endpoints, uno será al que apuntemos
+ * desde el cliente (por ej desde el botón Ingresar con Github en un HTML),
+ * este redireccionará directamente al servicio de Github.
+ * 
+ * El segundo endpoint será un callback al cual retornará Github con el resultado
+ * de su proceso de autenticación (ver comentarios dentro de passport.config.js).
+ * 
+ * Atención!!!: para que esto funcione, será necesario dar de alta una nueva app
+ * en Github (https://github.com/settings/apps/new) y agregar en config.js el
+ * CLIENT_ID, CLIENT_SECRET y CALLBACK_URL de la app. Este CALLBACK_URL debe coincidir
+ * con el endpoint habilitado debajo (/githubcallback)
+ */
 router.get('/ghlogin', passport.authenticate('ghlogin', { scope: ['user:email'] }), async (req, res) => {});
 
 router.get('/githubcallback', passport.authenticate('ghlogin', { failureRedirect: '/views/login' }), async (req, res) => {
+    /**
+     * Similar al login manual, podríamos elegir armar nuestro propio objeto session,
+     * o bien utilizar el cargado automáticamente por Passport, en este caso no hacemos
+     * más que redireccionar al profile.
+     */
+
     req.session.save(err => {
         if (err) return res.status(500).send({ error: 'Error al almacenar datos de sesión', data: [] });
 

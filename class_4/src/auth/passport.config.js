@@ -1,9 +1,3 @@
-/**
- * En este archivo cargaremos diferentes "estrategias" de Passport, es decir,
- * distintas alternativas a través de las cuales un usuario puede registrarse
- * o autenticarse (local, Github, Facebook, etc)
- */
-
 import passport from 'passport';
 import local from 'passport-local';
 import GitHubStrategy from 'passport-github2';
@@ -52,6 +46,8 @@ const initAuthStrategies = () => {
                 const email = profile._json?.email || null;
                 
                 // Necesitamos que en el profile haya un email
+                // Más adelante agregaremos un control alternativo en caso
+                // que el profile llegado desde Github no contenga ningún email usable
                 if (email) {
                     // Tratamos de ubicar en NUESTRA base de datos un usuario
                     // con ese email, si no está lo creamos y lo devolvemos,
