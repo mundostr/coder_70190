@@ -4,6 +4,7 @@ import passport from 'passport';
 import { uploader } from '../uploader.js';
 import UserManager from '../dao/users.manager.js';
 import initAuthStrategies from '../auth/passport.config.js';
+import { createToken, verifyToken } from '../utils.js';
 
 
 const router = Router();
@@ -194,6 +195,31 @@ router.get('/githubcallback', passport.authenticate('ghlogin', { failureRedirect
     });
 });
 
+/**
+ * Si elegimos utilizar el sistema JWT en lugar del módulo sessions, en el endpoint de login,
+ * simplemente generamos la credencial (token) y lo retornamos en la respuesta.
+ * 
+ * A partir de allí el cliente de guardarlo y presentarlo cada vez que quiera ingresar a un
+ * endpoint protegido (ver utils.js).
+ */
+router.post('/jwtlogin', async (req, res) => {
+    const { username, password } = req.body;
+
+    if (username != '' && password != '') {
+        const process = await manager.authenticate(username, password);
+        if (process) {
+            const payload = { username: username, admin: true };
+            // Generamos un token válido por 1 hora, y se lo devolvemos al cliente en la respuesta
+            const token = createToken(payload, '1h');
+            res.status(200).send({ error: null, data: { autentication: 'ok', token: token } });
+        } else {
+            res.status(401).send({ error: 'Usuario o clave no válidos', data: [] });
+        }
+    } else {
+        res.status(400).send({ error: 'Faltan campos: obligatorios username, password', data: [] });
+    }
+});
+
 router.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) return res.status(500).send({ error: 'Error al cerrar sesión', data: [] });
@@ -204,6 +230,15 @@ router.get('/logout', (req, res) => {
 });
 
 router.get('/private', auth, (req, res) => {
+    res.status(200).send({ error: null, data: 'Este contenido solo es visible por usuarios autenticados' });
+});
+
+/**
+ * Si utilizamos JWT en lugar de sessions, podemos reemplazar nuestro pequeño middleware auth
+ * por el verifyToken que hemos generado, el cual se encargará de ver que la solicitud incluya
+ * un token (credencial) válido. Ver utils.js.
+ */
+router.get('/private2', verifyToken, (req, res) => {
     res.status(200).send({ error: null, data: 'Este contenido solo es visible por usuarios autenticados' });
 });
 
