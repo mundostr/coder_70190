@@ -32,7 +32,8 @@ router.get('/login', (req, res) => {
 });
 
 router.get('/profile', auth, (req, res) => {
-    const data = req.session.userData;
+    // const data = req.session.userData;
+    const data = req.session.passport.user;
     
     res.status(200).render('profile', data);
 });

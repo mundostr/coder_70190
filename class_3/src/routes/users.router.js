@@ -11,7 +11,8 @@ const manager = new UserManager();
 initAuthStrategies();
 
 export const auth = (req, res, next) => {
-    if (req.session?.userData && req.session?.userData.admin) {
+    // if (req.session?.userData && req.session?.userData.admin) {
+    if (req.session?.passport) {
         next();
     } else {
         res.status(401).send({ error: 'No autorizado', data: [] });
@@ -142,8 +143,8 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/pplogin', passport.authenticate('login', {}), async (req, res) => {
-    req.user.admin = true; // Hardcoded por ahora
-    req.session.userData = req.user // Este req.user es inyectado automáticamente por passport
+    // req.user.admin = true; // Hardcoded por ahora
+    // req.session.userData = req.user // Este req.user es inyectado automáticamente por passport
 
     req.session.save(err => {
         if (err) return res.status(500).send({ error: 'Error al almacenar datos de sesión', data: [] });
