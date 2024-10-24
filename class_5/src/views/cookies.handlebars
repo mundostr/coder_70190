@@ -1,0 +1,21 @@
+<h1>Pruebas con cookies</h1>
+
+<div>
+    <form action="/api/cookies" method="post">
+        <input type="text" id="name" name="name">
+        <br />
+        <input type="text" id="email" name="email">
+        <br /><br />
+        <button class="btn btn-success" type="submit">Enviar</button>
+        <br /><br />
+        <button class="btn btn-success" onclick="getCookies()">Recuperar</button>
+    </form>
+</div>
+
+<script>
+    const getCookies = async () => {
+        const data = await fetch('/api/cookies/get');
+        const jsonData = await data.json();
+        console.log(jsonData);
+    }
+</script>
