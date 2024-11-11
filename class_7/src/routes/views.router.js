@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { auth } from './users.router.js';
+import { verifySession } from '../utils.js';
 
 
 const router = Router();
@@ -21,7 +21,7 @@ router.get('/login', (req, res) => {
     res.status(200).render('login', data);
 });
 
-router.get('/profile', auth, (req, res) => {
+router.get('/profile', verifySession, (req, res) => {
     // const data = req.session.userData;
     const data = req.session.passport.user;
     
