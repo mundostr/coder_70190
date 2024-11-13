@@ -24,7 +24,7 @@ initAuthStrategies();
 router.param('id', async (req, res, next, id) => {
     // Aprovechamos la expresión regular MONGODB_ID_REGEX,
     // para ver si el id que llega por req.params contiene ese formato
-    if (!config.MONGODB_ID_REGEX.test(req.params.id)) return res.status(400).send({ error: 'Id no válido', data: [] });
+    if (!config.MONGODB_ID_REGEX.match(req.params.id)) return res.status(400).send({ error: 'Id no válido', data: [] });
     next();
 })
 
