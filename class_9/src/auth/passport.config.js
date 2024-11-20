@@ -8,7 +8,16 @@ import UserController from '../controllers/users.controller.js';
 import config from '../config.js';
 
 const localStrategy = local.Strategy;
+const jwtStrategy = jwt.Strategy;
+const jwtExtractor = jwt.ExtractJwt;
 const manager = new UserController();
+
+const cookieExtractor = (req) => {
+    let token = null;
+    if (req && req.cookies) token = req.cookies[`${config.APP_NAME}_cookie`];
+    
+    return token;
+}
 
 const initAuthStrategies = () => {
     passport.use('login', new localStrategy(
@@ -76,6 +85,25 @@ const initAuthStrategies = () => {
                 }
             } catch (err) {
                 return done(err.message, false);
+            }
+        }
+    ));
+
+    /**
+     * Agregamos estrategia para realizar verificar token JWT, recibido vía cookie.
+     * Como Passport no tiene capacidad propia para gestionar cookies, necesitamos
+     * generar un middleware extra que le entregue el contenido (cookieExtractor)
+     */
+    passport.use('jwtlogin', new jwtStrategy(
+        {
+            jwtFromRequest: jwtExtractor.fromExtractors([cookieExtractor]),
+            secretOrKey: config.SECRET
+        },
+        async (jwt_payload, done) => {
+            try {
+                return done(null, jwt_payload);
+            } catch (err) {
+                return done(err);
             }
         }
     ));
