@@ -4,7 +4,7 @@
  * por separado, que opera exclusivamente con MongoDB.
  * 
  * Si necesitáramos implementar otro motor de base de datos, podríamos
- * crear otro archivo de servicio (por ej para Mysql, Postgres, etc),
+ * crear otro archivo de servicio (por ej para Mysql, Postgresql, etc),
  * sin tener que tocar la lógica de negocio en el controlador (ver users.controller.js)
  */
 
