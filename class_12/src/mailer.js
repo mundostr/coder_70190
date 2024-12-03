@@ -1,3 +1,16 @@
+/**
+ * MUY IMPORTANTE!:
+ * 
+ * Por motivos de seguridad, si se desea enviar correos a través de Gmail
+ * (similar situación acontece con otros prestadores), se deberá generar
+ * primero una CLAVE DE APLICACION, es decir, la credencial indicada debajo
+ * como config.GMAIL_APP_PASS, NO es la clave real de cuenta de Gmail, sino
+ * una de aplicación.
+ * 
+ * Se puede crear en este enlace:
+ * https://myaccount.google.com/apppasswords
+ */
+
 import nodemailer from 'nodemailer';
 import config from './config.js';
 
