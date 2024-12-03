@@ -4,6 +4,7 @@ import { uploader } from '../uploader.js';
 import UserController from '../controllers/user.controller.js';
 import { createToken, verifyToken, handlePolicies } from '../utils.js';
 import config from '../config.js';
+import { notifySuccessRegistration } from '../mailer.js';
 
 const router = Router();
 const controller = new UserController();
@@ -32,6 +33,29 @@ router.post('/', async (req, res) => {
             const data = { firstName, lastName, email, password };
             const process = await controller.add(data);
             res.status(200).send({ error: null, data: process });
+        } else {
+            res.status(400).send({ error: 'Faltan campos obligatorios', data: [] });
+        }
+    } catch (err) {
+        res.status(500).send({ error: 'Error interno de ejecución del servidor', data: [] });
+    }
+});
+
+router.post('/register', async (req, res) => {
+    try {
+        const { firstName, lastName, email, password } = req.body;
+
+        if (firstName != '' && lastName != '' && email != '' && password != '') {
+            const data = { firstName, lastName, email, password };
+            const process = await controller.register(data);
+
+            if (process) {
+                res.status(200).send({ error: null, data: 'El registro ha sido aceptado, bienvenido!' });
+                // Importamos esta rutina desde mailer.js para notificar por mail al usuario
+                await notifySuccessRegistration();
+            } else {
+                res.status(400).send({ error: 'El usuario ya se encuentra registrado', data: [] });
+            }
         } else {
             res.status(400).send({ error: 'Faltan campos obligatorios', data: [] });
         }
