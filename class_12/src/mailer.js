@@ -1,6 +1,9 @@
 /**
- * MUY IMPORTANTE!:
+ * Para notificaciones por mail, nodemailer es un módulo muy cómodo.
+ * Puede también probarse el servicio de Resend (https://resend.com), que cuenta con
+ * una opción gratuita y funciona muy bien.
  * 
+ * MUY IMPORTANTE!:
  * Por motivos de seguridad, si se desea enviar correos a través de Gmail
  * (similar situación acontece con otros prestadores), se deberá generar
  * primero una CLAVE DE APLICACION, es decir, la credencial indicada debajo
