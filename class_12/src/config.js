@@ -15,6 +15,8 @@ const config = {
     MONGODB_URI: process.env.MONGODB_URI,
     PERSISTENCE: process.env.PERSISTENCE,
     SECRET: process.env.SECRET,
+    GMAIL_APP_USER: process.env.GMAIL_APP_USER,
+    GMAIL_APP_PASS: process.env.GMAIL_APP_PASS
 };
 
 export default config;
