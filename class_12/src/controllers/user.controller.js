@@ -51,7 +51,7 @@ class UserController {
     authenticate = async (user, pass) => {
         try {
             const filter = { email: user };
-            const foundUser = await service.getOne(filter);
+            const foundUser = await service.get(filter);
 
             if (foundUser && isValidPassword(pass, foundUser.password)) {
                 const { password, ...filteredUser } = foundUser;
@@ -67,15 +67,9 @@ class UserController {
 
     register = async (data) => {
         try {
-            const filter = { email: data.username };
-            const user = await service.getOne(filter);
-
-            if (user === null) {
-                const normalizedData = new UserDTO(data);
-                return await service.add(normalizedData);
-            } else {
-                return null;
-            }
+            const filter = { email: data.email };
+            const user = await service.get(filter);
+            return user === null ? await this.add(data): null;
         } catch (err) {
             return err.message;
         }
